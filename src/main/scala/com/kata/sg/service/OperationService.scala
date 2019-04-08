@@ -24,7 +24,7 @@ object OperationService extends OperationService {
       .map(_ => OperationPerformed("Operation performed successfully!"))
   }
 
-  override def getHistory(accountNo: String): History = History(List(Operation("1", "2", Withdrawal)))
+  override def getHistory(accountNo: String): History = History(repo.getAllForAccount(accountNo))
 
 }
 
