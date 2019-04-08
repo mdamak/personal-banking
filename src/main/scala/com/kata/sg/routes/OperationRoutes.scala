@@ -25,8 +25,7 @@ trait OperationRoutes extends JsonSupport {
 
   def operationActor: ActorRef
 
-  // Required by the `ask` (?) method below
-  implicit lazy val timeoutOperation = Timeout(5.seconds) // usually we'd obtain the timeout from the system's configuration
+  implicit lazy val timeoutOperation = Timeout(5.seconds) // TODO obtain the timeout from the system's configuration
 
   lazy val operationRoutes: Route =
     pathPrefix("operations") {

@@ -1,6 +1,5 @@
 package com.kata.sg
 
-import com.kata.sg.UserRegistryActor.ActionPerformed
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import com.kata.sg.actor.AccountActor.AccountOpened
 import com.kata.sg.actor.OperationActor.OperationPerformed
@@ -30,9 +29,5 @@ trait JsonSupport extends SprayJsonSupport with DateMarshalling {
   implicit val operationJsonFormat = jsonFormat5(Operation)
   implicit val operationPerformedJsonFormat = jsonFormat1(OperationPerformed)
   implicit val historyJsonFormat = jsonFormat1(History)
-
-  implicit val userJsonFormat = jsonFormat3(User)
-  implicit val usersJsonFormat = jsonFormat1(Users)
-  implicit val actionPerformedJsonFormat = jsonFormat1(ActionPerformed)
 
 }

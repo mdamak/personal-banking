@@ -12,17 +12,16 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.util.{ Failure, Success }
 
-object QuickstartServer extends App with UserRoutes with AccountRoutes with OperationRoutes {
+object QuickstartServer extends App with AccountRoutes with OperationRoutes {
 
   implicit val system: ActorSystem = ActorSystem("helloAkkaHttpServer")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val executionContext: ExecutionContext = system.dispatcher
 
-  val userRegistryActor: ActorRef = system.actorOf(UserRegistryActor.props, "userRegistryActor")
   val accountActor: ActorRef = system.actorOf(AccountActor.props, "accountActor")
   val operationActor: ActorRef = system.actorOf(OperationActor.props, "operationActor")
 
-  lazy val routes: Route = userRoutes ~ accountRoutes ~ operationRoutes
+  lazy val routes: Route = accountRoutes ~ operationRoutes
   val serverBinding: Future[Http.ServerBinding] = Http().bindAndHandle(routes, "localhost", 8080)
 
   serverBinding.onComplete {
