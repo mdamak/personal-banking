@@ -4,47 +4,73 @@ import akka.actor.ActorRef
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import com.kata.sg.actor.OperationActor
-import com.kata.sg.model.{Operation, Withdrawal}
+import com.kata.sg.actor.{AccountActor, OperationActor}
+import com.kata.sg.model._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 
 class OperationRoutesSpec extends WordSpec with Matchers with ScalaFutures with ScalatestRouteTest
-    with OperationRoutes {
+  with OperationRoutes with AccountRoutes {
 
   override val operationActor: ActorRef =
-    system.actorOf(OperationActor.props, "account")
+    system.actorOf(OperationActor.props, "operation")
 
-  lazy val routes = operationRoutes
+  override val accountActor: ActorRef =
+    system.actorOf(AccountActor.props, "account")
 
- "OperationRoutes" should {
-   "return no operations for an inexistant account (GET /operations/1)" in {
-     val request = HttpRequest(uri = "/operations/1")
+  lazy val opRoutes = operationRoutes
+  lazy val accRoutes = accountRoutes
 
-     request ~> routes ~> check {
-       status should ===(StatusCodes.OK)
+  "OperationRoutes" should {
+    "return no operations for an unexistant account (GET /operations/1)" in {
+      val request = HttpRequest(uri = "/operations/1")
 
-       contentType should ===(ContentTypes.`application/json`)
+      request ~> opRoutes ~> check {
+        status should ===(StatusCodes.OK)
 
-       entityAs[String] should ===("""{"operations":[]}""")
-     }
-   }
+        contentType should ===(ContentTypes.`application/json`)
 
-   "be able to perform operation (POST /operations)" in {
-     val operation = Operation("1", "2", Withdrawal)
-     val operationEntity = Marshal(operation).to[MessageEntity].futureValue
+        entityAs[String] should ===("""{"operations":[]}""")
+      }
+    }
+  }
 
-     val request = Post("/operations").withEntity(operationEntity)
+  "get operations for an existing account (GET /operations/1)" in {
+    //First create account
+    val account = Account("1", "client1")
+    val accountEntity = Marshal(account).to[MessageEntity].futureValue
+    val requestForAccountCreation = Post("/accounts").withEntity(accountEntity)
+    requestForAccountCreation ~> accRoutes
+    //get operations
+    val request = HttpRequest(uri = "/operations/1")
 
-     request ~> routes ~> check {
-       status should ===(StatusCodes.Created)
+    request ~> opRoutes ~> check {
+      status should ===(StatusCodes.OK)
 
-       // we expect the response to be json:
-//       contentType should ===(ContentTypes.`application/json`)
+      contentType should ===(ContentTypes.`application/json`)
 
-       // and we know what message we're expecting back:
-       entityAs[String] should ===("""{"message":"Account created successfully! Account number : 1"}""")
-     }
-   }
- }
+      entityAs[String] should ===("""{"operations":[]}""")
+    }
+  }
+
+  "perform withdrawal for an existing account (POST /operations/1)" in {
+    //First create account
+    val account = Account("1", "client1", Balance(50))
+    val accountEntity = Marshal(account).to[MessageEntity].futureValue
+    val requestForAccountCreation = Post("/accounts").withEntity(accountEntity)
+    requestForAccountCreation ~> accRoutes
+
+    //post operations
+    val operation = Operation("O1", "1", Withdrawal, amount = Amount(20))
+    val opEntity = Marshal(operation).to[MessageEntity].futureValue
+    val request = Post("/operations").withEntity(opEntity)
+    request ~> opRoutes ~> check {
+      status should ===(StatusCodes.Created)
+
+      contentType should ===(ContentTypes.`application/json`)
+
+      entityAs[String] should ===("""{"message":"Operation performed successfully!"}""")
+    }
+  }
+
 }
