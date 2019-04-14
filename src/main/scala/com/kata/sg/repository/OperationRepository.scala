@@ -18,7 +18,7 @@ trait OperationRepositoryInMemory extends OperationRepository {
     val updatedOperations = operationsRepo.get(operation.accountNo)
       .map(ops => operation :: ops)
       .getOrElse(List(operation))
-    operationsRepo + ((operation.accountNo, updatedOperations))
+    operationsRepo.put(operation.accountNo, updatedOperations)
     Some(operation)
   }
 

@@ -1,8 +1,10 @@
 package com.kata.sg.service
 
 import com.kata.sg.actor.AccountActor.AccountOpened
-import com.kata.sg.model.{ Account, Accounts, Amount, Balance }
+import com.kata.sg.model.{Account, Accounts, Amount, Balance}
 import com.kata.sg.repository.AccountRepositoryInMemory
+
+import scala.util.{Failure, Success, Try}
 
 trait AccountService {
 
@@ -12,9 +14,9 @@ trait AccountService {
 
   def openAccount(no: String, clientName: String, balance: Balance = Balance()): Option[AccountOpened]
 
-  def debitAccount(no: String, amount: Amount): Option[Account]
+  def debitAccount(no: String, amount: Amount): Try[Account]
 
-  def creditAccount(no: String, amount: Amount): Option[Account]
+  def creditAccount(no: String, amount: Amount): Try[Account]
 }
 
 object AccountService extends AccountService {
@@ -28,10 +30,19 @@ object AccountService extends AccountService {
   override def openAccount(no: String, clientName: String, balance: Balance): Option[AccountOpened] =
     repo.open(no, clientName, balance).map(account => AccountOpened("Account created successfully! Account number : " + account.no))
 
-  override def debitAccount(no: String, amount: Amount): Option[Account] =
-    repo.get(no).map(account => Account(account.no, account.clientName, Balance(account.balance.balance - amount.amount)))
+  override def debitAccount(no: String, amount: Amount): Try[Account] = {
+    (repo.get(no) match {
+      case None => Failure(new Exception("Account not found"))
+      case Some(a) => if (a.balance.balance < amount.amount)
+        Failure(new Exception("Insufficient balance"))
+      else Success(a.copy(balance = Balance(a.balance.balance - amount.amount)))
+    }).flatMap(a => repo.update(no, a))
+  }
 
-  override def creditAccount(no: String, amount: Amount): Option[Account] =
-    repo.get(no).map(account => Account(account.no, account.clientName, Balance(account.balance.balance + amount.amount)))
+  override def creditAccount(no: String, amount: Amount): Try[Account] =
+    repo.get(no)
+      .map(a => Success(a.copy(balance = Balance(a.balance.balance + amount.amount))))
+      .getOrElse(Failure(new Exception("Account not found")))
+      .flatMap(a => repo.update(no, a))
 
 }
