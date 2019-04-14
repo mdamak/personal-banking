@@ -18,6 +18,8 @@ class AccountActor extends Actor {
     case GetAccount(message: String) =>
       sender() ! service.getAccount(message)
 
+    case GetAccounts() =>
+      sender() ! service.getAccounts()
   }
 }
 
@@ -27,6 +29,8 @@ object AccountActor {
   final case class OpenAccount(no: String, clientName: String, balance: Balance = Balance())
 
   final case class GetAccount(no: String)
+
+  final case class GetAccounts()
 
   final case class AccountOpened(message: String)
 
