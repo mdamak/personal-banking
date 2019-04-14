@@ -1,18 +1,18 @@
 package com.kata.sg.routes
 
-import akka.actor.{ActorRef, ActorSystem}
+import akka.actor.{ ActorRef, ActorSystem }
 import akka.event.Logging
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.server.directives.MethodDirectives.{get, post}
+import akka.http.scaladsl.server.directives.MethodDirectives.{ get, post }
 import akka.http.scaladsl.server.directives.PathDirectives.path
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.pattern.ask
 import akka.util.Timeout
 import com.kata.sg.JsonSupport
-import com.kata.sg.actor.AccountActor.{AccountOpened, GetAccount, GetAccounts, OpenAccount}
-import com.kata.sg.model.{Account, Accounts}
+import com.kata.sg.actor.AccountActor.{ AccountOpened, GetAccount, GetAccounts, OpenAccount }
+import com.kata.sg.model.{ Account, Accounts }
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -56,7 +56,6 @@ trait AccountRoutes extends JsonSupport {
               complete(maybeAccount)
             }
           }
-        }
-      )
+        })
     }
 }

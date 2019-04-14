@@ -1,7 +1,7 @@
 package com.kata.sg.repository
 
 import scala.collection.mutable.Map
-import com.kata.sg.model.{Account, Accounts, Balance}
+import com.kata.sg.model.{ Account, Accounts, Balance }
 
 trait AccountRepository {
   def open(no: String, clientName: String, balance: Balance = Balance()): Option[Account]

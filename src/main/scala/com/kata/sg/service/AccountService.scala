@@ -1,7 +1,7 @@
 package com.kata.sg.service
 
 import com.kata.sg.actor.AccountActor.AccountOpened
-import com.kata.sg.model.{Account, Accounts, Amount, Balance}
+import com.kata.sg.model.{ Account, Accounts, Amount, Balance }
 import com.kata.sg.repository.AccountRepositoryInMemory
 
 trait AccountService {
